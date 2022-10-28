@@ -6,11 +6,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:notebook/constants/routes.dart';
 import 'package:notebook/firebase_options.dart';
-import 'package:notebook/utilities/logout_dialog.dart';
+
 import 'package:notebook/views/login_view.dart';
 import 'package:notebook/views/register_view.dart';
 import 'package:notebook/views/verify_email.dart';
-import 'dart:developer' as devtools show log;
+
 
 import 'views/notes_view.dart';
 
@@ -35,6 +35,7 @@ void main() {
         loginRoute :(context) => const LoginView(),
         registerRoute:(context) => const RegisterView(),
         notesRoute:(context) => const NotesView(),
+        verifyEmailRoute:(context) => const VerifyEmailView(),
       }
     ));
 }
