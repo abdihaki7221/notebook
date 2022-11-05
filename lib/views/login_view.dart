@@ -1,10 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+
 import 'package:flutter/material.dart';
 import 'package:notebook/constants/routes.dart';
-import 'package:notebook/main.dart';
-import '../firebase_options.dart';
-import 'dart:developer' as devtools show  log;
+import 'package:notebook/services/auth/auth_exceptions.dart';
+import 'package:notebook/services/auth/auth_service.dart';
 
 import '../utilities/error_dialog.dart';
 
@@ -43,9 +41,7 @@ class _LoginViewState extends State<LoginView> {
 
       ),
       body: FutureBuilder(
-        future:  Firebase.initializeApp(
-              options: DefaultFirebaseOptions.currentPlatform,
-                ),
+        future:  AuthService.firebase().initialize(),
 
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
@@ -66,7 +62,7 @@ class _LoginViewState extends State<LoginView> {
             autocorrect: false,
             decoration: const InputDecoration(hintText: 'Enter password'),
             ),
-            TextButton(onPressed: ()async{
+      TextButton(onPressed: ()async{
              
       
               final email = _email.text;
@@ -75,10 +71,10 @@ class _LoginViewState extends State<LoginView> {
               
       
         try {
-          await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+          await AuthService.firebase().login(email: email, password: password);
 
-          final user = FirebaseAuth.instance.currentUser;
-          if(user?.emailVerified?? false){
+          final user = AuthService.firebase().currentUser;
+          if(user?.isEmailVerified?? false){
             //if user email is verified
             if(!mounted)return;
               Navigator.of(context).pushNamedAndRemoveUntil(notesRoute, (route) => false);
@@ -88,29 +84,27 @@ class _LoginViewState extends State<LoginView> {
           }
         
           
-        } on FirebaseAuthException catch (e) {
-          if(e.code == 'user-not-found'){
-            await errorDialog(context,
+        } on UserNotFoundAuthException{
+          await errorDialog(context,
              'User not found');
-          }else if(e.code =='wrong-password'){
-            await errorDialog(context,
+        }on WrongPasswordAuthException{
+           await errorDialog(context,
              'Wrong password');
-          }else if(e.code == 'invalid-email'){
-            await  errorDialog(context,
+
+        }on InvalidEmailAuthException{
+          await  errorDialog(context,
              'Invalid email');
-          }else{
-            await errorDialog(context, 'error ${e.code}');
-          }
-
-
-        }catch (e){
-          await errorDialog(context, e.toString(),
-          );
+        }on GenericAuthException{
+           await errorDialog(context, 'Authentication error');
         }
+        
+        
+         
+
       
       
       
-            },
+      },
              child: const Text("Login")),
 
              TextButton(onPressed: () {
